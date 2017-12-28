@@ -171,11 +171,17 @@ var game = {
                 } else {
                     pos2 = x * 10 + y;
                     if (game.cell.isEmpty(x, y)) {
-                        if (Math.abs(pos2 - pos1) == 9 || Math.abs(pos2 - pos1) == 11) {
-                            //alert("pos1: " + pos1 + " pos2:" + pos2);
-                            game.piece.move(pos1, pos2);
-                        } else if (Math.abs(pos2 - pos1) == 18 || Math.abs(pos2 - pos1) == 22) {
-                            game.piece.move(pos1, pos2);
+                        if (Math.abs(pos2 - pos1) == 9 || Math.abs(pos2 - pos1) == 18 || Math.abs(pos2 - pos1) == 11 || Math.abs(pos2 - pos1) == 22) {
+                            if (Math.sign(pos2 - pos1) == -1) {
+                                if (game.piece.isQueen(pos1)) {
+                                    game.piece.move();
+                                }
+                            } else {
+                                if (x == 1 || x == 8) {
+                                    game.piece.move(true);
+                                }
+                                game.piece.move();
+                            }
                         }
                     }
                 }
