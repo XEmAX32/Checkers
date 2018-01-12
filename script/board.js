@@ -162,7 +162,16 @@ var game = {
             analizeMove: function(e) {
                 var x = Math.round(e.clientX / u + 0.05),
                     y = Math.round(e.clientY / u + 0.05);
-                if (pos1 == 0) {
+                if(game.pos[x*10+y] == game.getTurn()){
+                    pos1 = x*10+y;
+                } else {
+                    pos2 = x*10+y;
+                    if((9, 18, 11, 22).includes(Math.abs(pos1 - pos2)){
+                       if(Math.sign()
+                    }
+                }
+                  
+                /*if (pos1 == 0) {
                     if (game.cell.isEmpty(x, y) == false) {
                         if (game.pos[x * 10 + y] == game.getTurn()) {
                             pos1 = x * 10 + y;
@@ -184,7 +193,7 @@ var game = {
                             }
                         }
                     }
-                }
+                }*/
             }
         },
         cell: {
