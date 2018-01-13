@@ -1,15 +1,18 @@
 var board = document.getElementById("chess-board"),
-    ctx = board.getContext("2d"),
-    turn = 1,
-    pos1 = 0,
-    pos2;
+    ctx = board.getContext("2d");
 
 const u = board.width / 8,
     white = "#e5e5e5",
-    black = "#000";
+    black = "#000",
+    crown = "script/crown.svg";
 
 var game = {
-     pos: {
+        data: {
+            turn: 1,
+            pos1: 0,
+            pos2
+        },
+        pos: {
             11: 1,
             21: 0,
             31: 1,
@@ -78,20 +81,8 @@ var game = {
         init: function() {
             if (board.height == board.width) {
                 game.createBoard();
-                board.addEventListener("click", game.piece.analizeMove, false);
+                board.addEventListener("click", game.piece.analizeClick, false);
                 document.getElementById("turn").innerHTML = "" + turn;
-                for (var m = 1; m < 9; m++) {
-                    for (var n = 1; n < 9; n++) {
-                        if (game.pos[m * 10 + n] != 0) {
-                            if (game.pos[m * 10 + n] == 2) {
-                                var color = 2;
-                            } else {
-                                var color = 1;
-                            }
-                            game.piece.create(m, n, color)
-                        }
-                    }
-                }
             } else {
                 console.error("Error: board width and height must be the same size!");
                 ctx.font = "60px Arial";
@@ -111,13 +102,25 @@ var game = {
                     ctx.closePath();
                 }
             }
+            for (var m = 1; m < 9; m++) {
+                for (var n = 1; n < 9; n++) {
+                    if (game.pos[m * 10 + n] != 0) {
+                        if (game.pos[m * 10 + n] == 2) {
+                            var color = 2;
+                        } else {
+                            var color = 1;
+                        }
+                        game.piece.create(m, n, color)
+                    }
+                }
+            }
         },
         getTurn: function() {
-            var r = 1;
-            if (turn % 2 == 1) {
-                r = 2;
+            var t = 1;
+            if (game.data.turn % 2 == 1) {
+                t = 2;
             }
-            return r;
+            return t;
         },
         convert: function(pos) {
             pos = pos.toString();
@@ -126,13 +129,16 @@ var game = {
             return [x, y];
         },
         piece: {
-            create: function(x, y, color) {
+            create: function(x, y, color, crown) {
                 ctx.beginPath();
                 ctx.arc((x * u) - u / 2, (y * u) - u / 2, u * 0.4, 0, 2 * Math.PI);
                 if (color == 1) {
                     ctx.fillStyle = "" + white;
                 } else {
                     ctx.fillStyle = "" + black;
+                }
+                if (crown == true) {
+                    ctx.drawImage(crown, (x * u) - u / 2, (x * u) - u / 2);
                 }
                 ctx.fill();
                 ctx.closePath();
@@ -149,51 +155,37 @@ var game = {
                 ctx.closePath();
             },
             move: function() {
-                var position1 = game.convert(pos1),
-                    position2 = game.convert(pos2);
-                game.piece.create(position2[0], position2[1], game.getTurn());
-                game.piece.remove(position1[0], position1[1]);
-                game.pos[pos1] = 0;
-                game.pos[pos2] = game.getTurn();
-                pos1 = 0;
-                turn++;
-                document.getElementById("turn").innerHTML = "" + turn;
+                var pos1 = game.convert(game.data.pos1),
+                    pos2 = game.convert(game.data.pos2);
+
+                game.piece.remove(pos1[0], pos1[1]);
             },
-            analizeMove: function(e) {
-                var x = Math.round(e.clientX / u + 0.05),
-                    y = Math.round(e.clientY / u + 0.05);
-                if(game.pos[x*10+y] == game.getTurn()){
-                    pos1 = x*10+y;
-                } else {
-                    pos2 = x*10+y;
-                    if((9, 18, 11, 22).includes(Math.abs(pos1 - pos2)){
-                       if(Math.sign()
+            analizeClick: function(e) {
+                var x = Math.round(e.clientX / u),
+                    y = Math.round(e.clientY / u),
+                    pos = x * 10 + y,
+                    dif = pos2 - pos1,
+                    num = pos1 - ((pos1 - pos2) / 2);
+                if (game.pos[pos] == game.getTurn()) {
+                    game.data.pos1 = pos;
+                } else
+                if (game.pos[pos] == 0 && game.data.pos1 !== 0) {
+                    if ((9, 18, 11, 22).includes(Math.abs(dif))) {
+                        /*Check if the move is possible for that type of piece (queen or not)*/
+                        if (Math.sign(dif) == -1 && game.piece.isQueen() == false) { return; }
+                        if (Math.sign(num) == 1) { game.data.num == num; }
+                        game.piece.move();
                     }
                 }
-                  
-                /*if (pos1 == 0) {
-                    if (game.cell.isEmpty(x, y) == false) {
-                        if (game.pos[x * 10 + y] == game.getTurn()) {
-                            pos1 = x * 10 + y;
-                        }
-                    }
+            },
+            /*Ricorda: da riscrivere*/
+            isQueen: function(pos) {
+                var v = game.pos[pos].toString();
+                if (v.search("q")) {
+                    return true;
                 } else {
-                    pos2 = x * 10 + y;
-                    if (game.cell.isEmpty(x, y)) {
-                        if (Math.abs(pos2 - pos1) == 9 || Math.abs(pos2 - pos1) == 18 || Math.abs(pos2 - pos1) == 11 || Math.abs(pos2 - pos1) == 22) {
-                            if (Math.sign(pos2 - pos1) == -1) {
-                                if (game.piece.isQueen(pos1)) {
-                                    game.piece.move();
-                                }
-                            } else {
-                                if (x == 1 || x == 8) {
-                                    game.piece.move(true);
-                                }
-                                game.piece.move();
-                            }
-                        }
-                    }
-                }*/
+                    return false;
+                }
             }
         },
         cell: {
@@ -205,12 +197,11 @@ var game = {
                 }
             },
             getColor: function(x, y) {
+                var color = "white";
                 if ((x + y) % 2 == 1) {
-                    return "black";
-                } else {
-                    return "white";
+                    color = "black";
                 }
+                return color;
             }
         }
     }
-};
